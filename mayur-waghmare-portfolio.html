@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mayur Waghmare — XR Game Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080e;
+  --surface:#0f0f18;
+  --surface2:#16161f;
+  --surface3:#1e1e2a;
+  --accent:#7c5cfc;
+  --accent-dim:rgba(124,92,252,0.15);
+  --teal:#4fc3a1;
+  --teal-dim:rgba(79,195,161,0.12);
+  --text:#eaeaf4;
+  --text2:#9494b0;
+  --text3:#5a5a72;
+  --border:rgba(124,92,252,0.18);
+  --border2:rgba(255,255,255,0.06);
+  --font:'Space Grotesk',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --radius:10px;
+  --radius-lg:14px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.7;overflow-x:hidden}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
+
+/* ─── NAV ─── */
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(1.5rem,5vw,3rem);background:rgba(8,8,14,0.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);transition:background .3s}
+.nav-logo{font-family:var(--mono);font-size:13px;color:var(--accent);letter-spacing:.06em;text-decoration:none}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{color:var(--text2);font-size:12px;text-decoration:none;letter-spacing:.07em;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+.nav-cta{font-family:var(--mono);font-size:11px;padding:7px 16px;border:1px solid var(--border);border-radius:6px;color:var(--teal);text-decoration:none;transition:all .2s;letter-spacing:.05em}
+.nav-cta:hover{background:var(--teal-dim);border-color:var(--teal)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
+.hamburger span{width:22px;height:1.5px;background:var(--text2);border-radius:2px;transition:all .3s}
+.mobile-menu{display:none;position:fixed;top:58px;left:0;right:0;background:rgba(8,8,14,0.97);border-bottom:1px solid var(--border);padding:1.5rem 2rem;z-index:199}
+.mobile-menu.open{display:block}
+.mobile-menu a{display:block;color:var(--text2);text-decoration:none;padding:10px 0;border-bottom:1px solid var(--border2);font-size:14px;letter-spacing:.05em}
+.mobile-menu a:last-child{border-bottom:none}
+
+/* ─── HERO ─── */
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:100px clamp(1.5rem,5vw,3rem) 4rem;max-width:980px;margin:0 auto}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--teal);letter-spacing:.18em;text-transform:uppercase;margin-bottom:1.75rem}
+.hero-eyebrow::before{content:'';width:28px;height:1px;background:var(--teal)}
+.hero-eyebrow::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--teal),transparent)}
+h1.hero-title{font-size:clamp(3rem,8vw,5.5rem);font-weight:600;line-height:1.03;letter-spacing:-.03em;margin-bottom:1.5rem}
+h1.hero-title .line2{color:var(--accent)}
+.hero-sub{font-size:1.05rem;color:var(--text2);max-width:500px;line-height:1.85;margin-bottom:2.5rem}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:3.5rem}
+.btn{font-family:var(--mono);font-size:12px;padding:11px 22px;border-radius:7px;text-decoration:none;letter-spacing:.06em;transition:all .2s;display:inline-flex;align-items:center;gap:7px;cursor:pointer;border:none}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#6948e8;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-outline:hover{border-color:rgba(124,92,252,0.5);background:var(--accent-dim)}
+.hero-stats{display:grid;grid-template-columns:repeat(3,auto);gap:0;width:fit-content;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.hstat{padding:1.25rem 2rem;background:var(--surface)}
+.hstat:not(:last-child){border-right:1px solid var(--border)}
+.hstat-num{font-size:2rem;font-weight:600;line-height:1;color:var(--text)}
+.hstat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:4px;font-family:var(--mono)}
+
+/* ─── SECTION BASE ─── */
+.section{padding:5rem clamp(1.5rem,5vw,3rem);max-width:980px;margin:0 auto}
+.section-eyebrow{font-family:var(--mono);font-size:11px;color:var(--teal);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.6rem}
+h2.section-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:600;letter-spacing:-.02em;margin-bottom:2.5rem}
+.section-divider{height:1px;background:var(--border);max-width:980px;margin:0 auto}
+
+/* ─── ABOUT ─── */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start}
+.about-text p{color:var(--text2);line-height:1.9;margin-bottom:1rem}
+.about-text p:last-child{margin-bottom:0}
+.about-text strong{color:var(--text);font-weight:500}
+.about-highlights{display:flex;flex-direction:column;gap:12px}
+.highlight-item{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:1rem 1.25rem;display:flex;align-items:center;gap:12px}
+.hl-icon{width:34px;height:34px;border-radius:7px;background:var(--accent-dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.hl-text{font-size:13px;color:var(--text2)}
+.hl-text strong{display:block;color:var(--text);font-size:14px;font-weight:500;margin-bottom:2px}
+
+/* ─── SKILLS ─── */
+.skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.skill-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:1.25rem 1.5rem;transition:border-color .2s}
+.skill-card:hover{border-color:var(--border)}
+.skill-cat{font-family:var(--mono);font-size:10px;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem}
+.skill-pills{display:flex;flex-wrap:wrap;gap:6px}
+.skill-pill{font-size:12px;background:var(--surface3);border:1px solid var(--border2);border-radius:5px;padding:3px 9px;color:var(--text2);transition:all .15s}
+.skill-pill:hover{color:var(--text);border-color:var(--border)}
+
+/* ─── EXPERIENCE ─── */
+.exp-timeline{position:relative;padding-left:2rem}
+.exp-timeline::before{content:'';position:absolute;left:.5px;top:8px;bottom:0;width:1px;background:var(--border)}
+.exp-item{position:relative;margin-bottom:2.5rem}
+.exp-item::before{content:'';position:absolute;left:-2rem;top:6px;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(124,92,252,0.15)}
+.exp-role{font-size:1rem;font-weight:500;color:var(--text)}
+.exp-co{font-family:var(--mono);font-size:12px;color:var(--accent);margin:.3rem 0 .15rem}
+.exp-period{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:.75rem}
+.exp-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.exp-list li{font-size:13.5px;color:var(--text2);padding-left:1.2rem;position:relative;line-height:1.65}
+.exp-list li::before{content:'›';position:absolute;left:0;color:var(--teal);font-weight:600}
+
+/* ─── PROJECTS ─── */
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.project-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;transition:border-color .2s,transform .25s;cursor:pointer}
+.project-card:hover{border-color:rgba(124,92,252,0.4);transform:translateY(-3px)}
+.card-media{height:160px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden}
+.card-media img,.card-media video{width:100%;height:100%;object-fit:cover}
+.card-media-empty{display:flex;flex-direction:column;align-items:center;gap:6px}
+.card-media-empty span{font-size:2.2rem}
+.card-media-empty small{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.06em}
+.media-count-badge{position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,0.72);font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;color:var(--text2)}
+.card-body{padding:1.1rem 1.25rem}
+.card-name{font-size:.9rem;font-weight:500;color:var(--text);margin-bottom:.4rem}
+.card-desc{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:.85rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-techs{display:flex;flex-wrap:wrap;gap:4px}
+.tech-badge{font-family:var(--mono);font-size:10px;padding:2px 8px;background:var(--teal-dim);border:1px solid rgba(79,195,161,0.2);border-radius:4px;color:var(--teal)}
+
+/* ─── LIGHTBOX ─── */
+#lightbox{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.92);padding:1.5rem}
+#lightbox.open{display:flex;flex-direction:column}
+.lb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;max-width:900px;width:100%;margin-left:auto;margin-right:auto}
+.lb-title{font-size:1rem;font-weight:500;color:var(--text)}
+.lb-close{background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:20px;width:36px;height:36px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s}
+.lb-close:hover{color:var(--text)}
+.lb-main{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;max-width:900px;width:100%;margin:0 auto}
+.lb-main img,.lb-main video{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+.lb-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);border:1px solid var(--border);color:var(--text);font-size:20px;width:40px;height:40px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:2}
+.lb-arrow:hover{background:var(--accent-dim);border-color:var(--accent)}
+.lb-prev{left:8px}.lb-next{right:8px}
+.lb-strip{display:flex;gap:8px;overflow-x:auto;padding:12px 0;max-width:900px;width:100%;margin:0 auto;scrollbar-width:thin}
+.lb-strip-item{width:64px;height:42px;flex-shrink:0;border-radius:5px;overflow:hidden;border:2px solid transparent;cursor:pointer;opacity:.55;transition:all .2s;background:var(--surface2)}
+.lb-strip-item.active{border-color:var(--accent);opacity:1}
+.lb-strip-item img,.lb-strip-item video{width:100%;height:100%;object-fit:cover}
+.lb-info{max-width:900px;width:100%;margin:8px auto 0;font-size:12px;color:var(--text3);font-family:var(--mono)}
+/* project detail panel inside lightbox */
+.lb-detail{max-width:900px;width:100%;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;padding-top:1rem;border-top:1px solid var(--border2)}
+.lb-detail h3{font-size:1.1rem;font-weight:500;margin-bottom:.5rem}
+.lb-detail p{font-size:13px;color:var(--text2);line-height:1.7}
+.lb-detail-techs{display:flex;flex-wrap:wrap;gap:5px;margin-top:.75rem}
+.lb-link{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--accent);text-decoration:none;margin-top:.75rem;border:1px solid var(--border);padding:6px 12px;border-radius:6px;transition:all .2s}
+.lb-link:hover{background:var(--accent-dim)}
+
+/* ─── CONTACT ─── */
+.contact-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:3rem 2.5rem;text-align:center;max-width:560px;margin:0 auto}
+.contact-box h3{font-size:1.5rem;font-weight:600;letter-spacing:-.01em;margin-bottom:.6rem}
+.contact-box p{color:var(--text2);margin-bottom:2rem}
+.contact-links{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
+
+/* ─── ADMIN PANEL ─── */
+#admin-toggle{position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
+#admin-toggle:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+#admin-panel{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.85);padding:1.5rem}
+#admin-panel.open{display:flex;align-items:flex-start;justify-content:flex-end}
+.admin-drawer{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:520px;height:100%;overflow-y:auto;display:flex;flex-direction:column}
+.admin-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
+.admin-header h2{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+.admin-badge{font-family:var(--mono);font-size:10px;color:var(--teal);background:var(--teal-dim);border:1px solid rgba(79,195,161,0.2);padding:2px 8px;border-radius:100px}
+.admin-body{padding:1.25rem 1.5rem;flex:1}
+.admin-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:1.25rem}
+.admin-tab{flex:1;padding:8px;font-size:12px;font-family:var(--mono);cursor:pointer;background:transparent;border:none;color:var(--text2);transition:all .15s;text-align:center;letter-spacing:.04em}
+.admin-tab.active{background:var(--accent-dim);color:var(--accent)}
+.ap{display:none}.ap.active{display:block}
+.proj-row{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.proj-row-icon{font-size:18px;flex-shrink:0}
+.proj-row-info{flex:1;min-width:0}
+.proj-row-info .prn{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.proj-row-info .prm{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+.proj-row-actions{display:flex;gap:5px;flex-shrink:0}
+.abtn{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
+.abtn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.abtn.danger{border-color:rgba(226,75,74,0.3);color:#e24b4a}
+.abtn.danger:hover{background:rgba(226,75,74,0.1)}
+.edit-form{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-bottom:1rem}
+.ef-title{font-size:13px;font-weight:500;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.field{margin-bottom:10px}
+.field label{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:4px}
+.field input,.field textarea,.field select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:13px;border-radius:6px;padding:7px 10px;outline:none;transition:border-color .15s}
+.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:72px}
+.row2f{display:grid;grid-template-columns:1fr 80px;gap:8px}
+.tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.etag{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;background:var(--teal-dim);border:1px solid rgba(79,195,161,0.2);border-radius:4px;padding:2px 8px;color:var(--teal)}
+.etag .rx{cursor:pointer;color:var(--text3);font-size:12px;line-height:1;transition:color .1s}
+.etag .rx:hover{color:#e24b4a}
+.add-tag-row{display:flex;gap:6px}
+.add-tag-row input{flex:1;font-size:12px;padding:5px 9px}
+.add-tag-row button{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--teal);cursor:pointer;white-space:nowrap;transition:all .15s}
+.add-tag-row button:hover{background:var(--teal-dim)}
+.media-upload-area{border:1px dashed var(--border);border-radius:7px;padding:1.25rem;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:8px}
+.media-upload-area:hover{border-color:var(--accent)}
+.media-upload-area p{font-size:12px;color:var(--text3);margin-top:4px}
+.media-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;margin-bottom:8px}
+.mthumb{position:relative;border-radius:5px;overflow:hidden;border:1px solid var(--border2);aspect-ratio:16/9;background:var(--surface);display:flex;align-items:center;justify-content:center}
+.mthumb img,.mthumb video{width:100%;height:100%;object-fit:cover}
+.mthumb .mdel{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .15s;cursor:pointer}
+.mthumb:hover .mdel{background:rgba(0,0,0,0.55)}
+.mdel-btn{background:#e24b4a;border:none;border-radius:4px;color:#fff;font-size:12px;padding:2px 6px;cursor:pointer;opacity:0;transition:opacity .15s}
+.mthumb:hover .mdel-btn{opacity:1}
+.form-actions{display:flex;justify-content:flex-end;gap:7px;padding-top:.75rem;border-top:1px solid var(--border2);margin-top:.75rem}
+.fab{font-family:var(--mono);font-size:11px;padding:7px 14px;border-radius:6px;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:transparent;color:var(--text2)}
+.fab:hover{border-color:var(--border);background:var(--surface3)}
+.fab.save{background:var(--accent);border-color:var(--accent);color:#fff}
+.fab.save:hover{background:#6948e8}
+.add-new-btn{width:100%;padding:10px;font-family:var(--mono);font-size:12px;background:var(--accent-dim);border:1px dashed var(--border);color:var(--accent);border-radius:7px;cursor:pointer;letter-spacing:.04em;transition:all .2s;margin-bottom:1rem}
+.add-new-btn:hover{background:rgba(124,92,252,0.22);border-style:solid}
+.toast{position:fixed;bottom:5.5rem;right:1.5rem;z-index:600;background:var(--surface);border:1px solid rgba(79,195,161,0.4);color:var(--teal);font-family:var(--mono);font-size:12px;padding:9px 16px;border-radius:7px;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* ─── SITE SETTINGS panel ─── */
+.settings-section{margin-bottom:1.5rem}
+.settings-section h3{font-size:12px;font-family:var(--mono);color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border2)}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:13px;color:var(--text2)}
+.setting-label small{display:block;font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--mono)}
+.setting-row input[type=text]{width:180px;font-size:12px;padding:5px 9px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:5px;outline:none}
+.setting-row input[type=text]:focus{border-color:var(--accent)}
+.save-settings-btn{width:100%;padding:9px;font-family:var(--mono);font-size:12px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;margin-top:1rem;transition:background .2s;letter-spacing:.04em}
+.save-settings-btn:hover{background:#6948e8}
+
+/* ─── FOOTER ─── */
+footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border2);font-family:var(--mono);font-size:11px;color:var(--text3)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:700px){
+  .nav-links,.nav-cta{display:none}
+  .hamburger{display:flex}
+  h1.hero-title{font-size:2.8rem}
+  .hero-stats{grid-template-columns:1fr 1fr 1fr}
+  .hstat{padding:.9rem 1rem}
+  .hstat-num{font-size:1.5rem}
+  .about-grid{grid-template-columns:1fr}
+  .lb-detail{grid-template-columns:1fr}
+  .admin-drawer{max-width:100%}
+  .lb-arrow{display:none}
+}
+@media(max-width:480px){
+  .hero-stats{grid-template-columns:1fr}
+  .hstat:not(:last-child){border-right:none;border-bottom:1px solid var(--border)}
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{opacity:0;animation:fadeUp .5s ease forwards}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}.delay-4{animation-delay:.4s}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#hero" class="nav-logo">MW.XR</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="mailto:mayurw81@gmail.com" class="nav-cta">Hire me</a>
+  <div class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#about" onclick="toggleMenu()">About</a>
+  <a href="#skills" onclick="toggleMenu()">Skills</a>
+  <a href="#experience" onclick="toggleMenu()">Experience</a>
+  <a href="#projects" onclick="toggleMenu()">Projects</a>
+  <a href="#contact" onclick="toggleMenu()">Contact</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-eyebrow fade-up">XR Game Developer &nbsp;·&nbsp; Unity3D &nbsp;·&nbsp; VR Simulation</div>
+  <h1 class="hero-title fade-up delay-1">
+    <span id="hero-name-line1">Mayur</span><br>
+    <span class="line2" id="hero-name-line2">Waghmare</span>
+  </h1>
+  <p class="hero-sub fade-up delay-2" id="hero-tagline">I build immersive VR training simulations and games — from welding torches to chemistry labs — bridging real-world hardware with virtual experiences.</p>
+  <div class="hero-actions fade-up delay-3">
+    <a href="#projects" class="btn btn-primary">View projects</a>
+    <a href="mailto:mayurw81@gmail.com" class="btn btn-outline">Get in touch</a>
+  </div>
+  <div class="hero-stats fade-up delay-4">
+    <div class="hstat"><div class="hstat-num">4+</div><div class="hstat-label">Years XR dev</div></div>
+    <div class="hstat"><div class="hstat-num" id="stat-projects">10+</div><div class="hstat-label">VR projects</div></div>
+    <div class="hstat"><div class="hstat-num">25%</div><div class="hstat-label">Perf boost</div></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ABOUT -->
+<section class="section" id="about">
+  <div class="section-eyebrow">Who I am</div>
+  <h2 class="section-title">About me</h2>
+  <div class="about-grid">
+    <div class="about-text">
+      <p id="about-para1">XR game developer with <strong>4+ years</strong> of hands-on experience designing and shipping immersive simulations using Unity3D and C#. I specialise in bridging the physical and virtual — building custom hardware integrations that turn real fire extinguishers, welding guns, and plasma cutters into tracked VR controllers.</p>
+      <p id="about-para2">I've worked across the full stack of VR development: from designing mechanics and UI systems to profiling GPU memory and shipping builds on Meta Quest 2, 3, and HTC Vive. Strong on collaboration, agile workflows, and hitting metrics that matter.</p>
+      <p id="about-para3">Based in <strong>Mumbai, Maharashtra</strong>. Open to XR roles, simulation projects, and collaborations.</p>
+    </div>
+    <div class="about-highlights">
+      <div class="highlight-item">
+        <div class="hl-icon">🎓</div>
+        <div class="hl-text"><strong>B.E. Information Technology</strong>Nagpur University · 2020 · CGPA 8.24</div>
+      </div>
+      <div class="highlight-item">
+        <div class="hl-icon">📍</div>
+        <div class="hl-text"><strong>Location</strong>Mumbai, Maharashtra, India</div>
+      </div>
+      <div class="highlight-item">
+        <div class="hl-icon">🥽</div>
+        <div class="hl-text"><strong>Specialisation</strong>VR / XR simulation, custom hardware integration</div>
+      </div>
+      <div class="highlight-item">
+        <div class="hl-icon">⚡</div>
+        <div class="hl-text"><strong>Currently</strong>Unity Developer at SIMBOTT Technologies LLP</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- SKILLS -->
+<section class="section" id="skills">
+  <div class="section-eyebrow">Tech stack</div>
+  <h2 class="section-title">Skills</h2>
+  <div class="skills-grid">
+    <div class="skill-card"><div class="skill-cat">Languages</div><div class="skill-pills"><span class="skill-pill">C#</span><span class="skill-pill">C++</span><span class="skill-pill">OOP</span><span class="skill-pill">Design Patterns</span><span class="skill-pill">Data Structures</span></div></div>
+    <div class="skill-card"><div class="skill-cat">Engines &amp; Platforms</div><div class="skill-pills"><span class="skill-pill">Unity3D</span><span class="skill-pill">Unreal Engine</span><span class="skill-pill">Meta Quest 2/3</span><span class="skill-pill">HTC Vive</span><span class="skill-pill">Oculus MR</span></div></div>
+    <div class="skill-card"><div class="skill-cat">Specialisations</div><div class="skill-pills"><span class="skill-pill">VR Interactions</span><span class="skill-pill">Shader Integration</span><span class="skill-pill">UI/UX</span><span class="skill-pill">3D Asset Pipelines</span><span class="skill-pill">Custom Hardware</span></div></div>
+    <div class="skill-card"><div class="skill-cat">Tools &amp; Practices</div><div class="skill-pills"><span class="skill-pill">Git</span><span class="skill-pill">Tortoise SVN</span><span class="skill-pill">Profiling</span><span class="skill-pill">Agile / Scrum</span><span class="skill-pill">Cross-platform</span></div></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- EXPERIENCE -->
+<section class="section" id="experience">
+  <div class="section-eyebrow">Work history</div>
+  <h2 class="section-title">Experience</h2>
+  <div class="exp-timeline">
+    <div class="exp-item">
+      <div class="exp-role">Unity Developer — VR &amp; Simulation</div>
+      <div class="exp-co">SIMBOTT Technologies LLP</div>
+      <div class="exp-period">Sep 2023 – Present · Mumbai</div>
+      <ul class="exp-list">
+        <li>Developed immersive VR simulations for training and education using Unity3D and C#</li>
+        <li>Designed custom VR mechanics, UI systems, and interactions optimised for Meta Quest 2, 3 and HTC Vive</li>
+        <li>Increased performance by 25% through efficient memory management and frame rate optimisation</li>
+        <li>Implemented custom hardware integration — HTC Vive trackers and Meta Quest devices — for precise physical tracking</li>
+        <li>Collaborated with cross-functional teams (artists, designers, testers) to deliver polished VR experiences</li>
+      </ul>
+    </div>
+    <div class="exp-item">
+      <div class="exp-role">VR Game Developer</div>
+      <div class="exp-co">Newcreax</div>
+      <div class="exp-period">Mar 2022 – Sep 2023 · Nagpur</div>
+      <ul class="exp-list">
+        <li>Designed and developed VR games from concept to release with engaging mechanics and UI</li>
+        <li>Implemented hardware compatibility across VR headsets, reducing device-related issues by 30%</li>
+        <li>Built immersive environments collaborating with artists and sound designers</li>
+        <li>Participated in agile development (daily stand-ups, code reviews), improving sprint velocity by 15%</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- PROJECTS -->
+<section class="section" id="projects">
+  <div class="section-eyebrow">What I've built</div>
+  <h2 class="section-title">Projects</h2>
+  <div class="projects-grid" id="projects-grid"></div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- CONTACT -->
+<section class="section" id="contact">
+  <div class="section-eyebrow">Let's talk</div>
+  <h2 class="section-title">Contact</h2>
+  <div class="contact-box">
+    <h3 id="contact-heading">Let's build something immersive</h3>
+    <p id="contact-sub">Open to new XR roles, simulation projects, and VR collaborations.</p>
+    <div class="contact-links">
+      <a href="mailto:mayurw81@gmail.com" class="btn btn-primary">mayurw81@gmail.com</a>
+      <a href="https://linkedin.com/in/mayur-waghmare-b40620159" target="_blank" class="btn btn-outline">LinkedIn ↗</a>
+      <a href="tel:+919764859504" class="btn btn-outline">+91 97648 59504</a>
+    </div>
+  </div>
+</section>
+
+<footer>© <span id="footer-year"></span> <span id="footer-name">Mayur Waghmare</span> · XR Developer · Wardha, Maharashtra</footer>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <div class="lb-header">
+    <div class="lb-title" id="lb-title"></div>
+    <button class="lb-close" onclick="closeLightbox()" aria-label="Close">✕</button>
+  </div>
+  <div class="lb-main">
+    <button class="lb-arrow lb-prev" onclick="lbNav(-1)" aria-label="Previous">‹</button>
+    <div id="lb-media-wrap" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"></div>
+    <button class="lb-arrow lb-next" onclick="lbNav(1)" aria-label="Next">›</button>
+  </div>
+  <div class="lb-info" id="lb-info"></div>
+  <div class="lb-strip" id="lb-strip"></div>
+  <div class="lb-detail" id="lb-detail"></div>
+</div>
+
+<!-- ADMIN TOGGLE -->
+<button id="admin-toggle" onclick="toggleAdmin()" title="Admin panel" aria-label="Open admin panel">⚙</button>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <div class="admin-drawer">
+    <div class="admin-header">
+      <h2>⚙ Admin <span class="admin-badge">Mayur Waghmare</span></h2>
+      <button class="abtn" onclick="toggleAdmin()">✕ Close</button>
+    </div>
+    <div class="admin-body">
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchAdminTab('projects',this)">Projects</button>
+        <button class="admin-tab" onclick="switchAdminTab('settings',this)">Site settings</button>
+      </div>
+
+      <!-- PROJECTS TAB -->
+      <div class="ap active" id="ap-projects">
+        <button class="add-new-btn" onclick="openAddForm()">+ Add new project</button>
+        <div id="add-form-container"></div>
+        <div id="admin-project-list"></div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div class="ap" id="ap-settings">
+        <div class="settings-section">
+          <h3>Hero section</h3>
+          <div class="setting-row">
+            <div class="setting-label">Name line 1<small>First line of hero title</small></div>
+            <input type="text" id="s-name1" value="Mayur">
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Name line 2<small>Accented line</small></div>
+            <input type="text" id="s-name2" value="Waghmare">
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Tagline<small>Sub-heading text</small></div>
+            <input type="text" id="s-tagline" value="I build immersive VR training simulations and games — from welding torches to chemistry labs — bridging real-world hardware with virtual experiences.">
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>Contact section</h3>
+          <div class="setting-row">
+            <div class="setting-label">Heading</div>
+            <input type="text" id="s-contact-h" value="Let's build something immersive">
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Sub-text</div>
+            <input type="text" id="s-contact-sub" value="Open to new XR roles, simulation projects, and VR collaborations.">
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Email</div>
+            <input type="text" id="s-email" value="mayurw81@gmail.com">
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">LinkedIn URL</div>
+            <input type="text" id="s-linkedin" value="https://linkedin.com/in/mayur-waghmare-b40620159">
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Phone</div>
+            <input type="text" id="s-phone" value="+91 97648 59504">
+          </div>
+        </div>
+        <button class="save-settings-btn" onclick="saveSettings()">Save settings</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA ───
+let projects = [
+  {id:1,icon:'🔥',name:'VR Welding Simulator',desc:'Realistic sparks, smoke, and mesh deformation. Custom welding gun hardware via HTC Vive trackers. Improved trainee task accuracy by 20%.',techs:['Unity','C#','HTC Vive','Oculus MR'],media:[],link:''},
+  {id:2,icon:'⚡',name:'Plasma Cutting VR',desc:'Physics-based plasma cutting with particle effects and sparks. Custom plasma gun integrated using HTC Vive trackers for precise immersive interaction.',techs:['Unity','VR SDKs','HTC Vive'],media:[],link:''},
+  {id:3,icon:'🧪',name:'Chemistry Simulator',desc:'Virtual chemistry lab with real-time reactions. Fluid dynamics via Liquid Volume Pro 2 and Obi Liquid for realistic pouring, mixing, and chemical interactions.',techs:['Unity','VR','Obi Liquid'],media:[],link:''},
+  {id:4,icon:'🚗',name:'Multi Vehicle Driving Simulator',desc:'VR driving sim for Jeep Safari Storme and Ashok Leyland Stallion. Manual gear system with Vehicle Physics Pro 2 for accurate handling.',techs:['Unity','VR','C#'],media:[],link:''},
+  {id:5,icon:'🎨',name:'Spray Paint Simulator',desc:'Real-time particle effects and pressure-sensitive controls. Custom spray gun mapped to HTC Vive trackers for ergonomic real-world feel.',techs:['Unity','VR','HTC Vive'],media:[],link:''},
+  {id:6,icon:'🧯',name:'Fire Extinguisher VR',desc:'Fire safety training with realistic fire propagation and extinguishing mechanics. Real extinguisher hardware mapped to VR controls for maximum immersion.',techs:['Unity','Oculus','Hardware'],media:[],link:''},
+  {id:7,icon:'🚜',name:'Dozer Driving Simulator',desc:'Multi-module dozer sim with realistic vehicle physics and operator training modules for industrial safety training.',techs:['Unity','VR'],media:[],link:''},
+  {id:8,icon:'🔧',name:'Car & Bike Mechanic Simulator',desc:'Hands-on mechanic training covering engine repair, assembly, and diagnostics in an immersive VR environment.',techs:['Unity','VR'],media:[],link:''},
+  {id:9,icon:'⚙️',name:'Fitter Lathe Machine VR',desc:'VR-based machine operation training with interactive lathe mechanics, safety procedures, and guided task flows.',techs:['Unity','C#','VR'],media:[],link:''},
+  {id:10,icon:'💡',name:'Electrical Simulator',desc:'Interactive electrical safety and wiring simulations for vocational training in a zero-risk virtual environment.',techs:['Unity','VR SDKs'],media:[],link:''},
+];
+let nextId = 11;
+let editingId = null;
+let tempMedia = [];
+let tempTechs = [];
+let lbProject = null;
+let lbIndex = 0;
+
+// ─── UTILS ───
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+function toggleMenu(){document.getElementById('mobile-menu').classList.toggle('open')}
+
+// ─── FOOTER YEAR ───
+document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+// ─── NAV ACTIVE ───
+const navLinks = document.querySelectorAll('.nav-links a');
+const sections = document.querySelectorAll('section[id]');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)cur=s.id});
+  navLinks.forEach(a=>{a.classList.toggle('active',a.getAttribute('href')==='#'+cur)});
+},{passive:true});
+
+// ─── RENDER PROJECTS ───
+function renderProjects(){
+  const g=document.getElementById('projects-grid');
+  g.innerHTML=projects.map(p=>{
+    const m=p.media[0];
+    let mediaHtml;
+    if(m){
+      mediaHtml = m.type==='video'
+        ? `<video src="${m.url}" muted loop autoplay playsinline style="width:100%;height:100%;object-fit:cover"></video>`
+        : `<img src="${m.url}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover" loading="lazy">`;
+    } else {
+      mediaHtml = `<div class="card-media-empty"><span>${p.icon}</span><small>No media yet</small></div>`;
+    }
+    const cnt = p.media.length>1 ? `<span class="media-count-badge">${p.media.length} files</span>` : '';
+    const techs = p.techs.slice(0,3).map(t=>`<span class="tech-badge">${esc(t)}</span>`).join('');
+    return `<div class="project-card" onclick="openLightbox(${p.id})">
+      <div class="card-media">${mediaHtml}${cnt}</div>
+      <div class="card-body">
+        <div class="card-name">${esc(p.name)}</div>
+        <div class="card-desc">${esc(p.desc)}</div>
+        <div class="card-techs">${techs}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('stat-projects').textContent = projects.length+'+';
+}
+
+// ─── LIGHTBOX ───
+function openLightbox(id){
+  lbProject = projects.find(p=>p.id===id);
+  if(!lbProject)return;
+  lbIndex = 0;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow='hidden';
+  renderLightbox();
+}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow='';
+}
+function lbNav(dir){
+  if(!lbProject||!lbProject.media.length)return;
+  lbIndex=(lbIndex+dir+lbProject.media.length)%lbProject.media.length;
+  renderLbMedia();
+  renderLbStrip();
+}
+function renderLightbox(){
+  const p=lbProject;
+  document.getElementById('lb-title').textContent=p.name;
+  renderLbMedia();
+  renderLbStrip();
+  // detail
+  const link = p.link ? `<a href="${esc(p.link)}" target="_blank" class="lb-link">View project ↗</a>` : '';
+  const techs = p.techs.map(t=>`<span class="tech-badge">${esc(t)}</span>`).join('');
+  document.getElementById('lb-detail').innerHTML=`
+    <div>
+      <h3>${esc(p.name)}</h3>
+      <p>${esc(p.desc)}</p>
+      ${link}
+    </div>
+    <div>
+      <h3 style="font-size:.85rem;color:var(--text2);font-weight:400;margin-bottom:.5rem">Tech stack</h3>
+      <div class="lb-detail-techs">${techs}</div>
+    </div>`;
+}
+function renderLbMedia(){
+  const p=lbProject;
+  const wrap=document.getElementById('lb-media-wrap');
+  const info=document.getElementById('lb-info');
+  if(!p.media.length){
+    wrap.innerHTML=`<div style="font-size:5rem">${p.icon}</div>`;
+    info.textContent='No media uploaded for this project yet.';
+    return;
+  }
+  const m=p.media[lbIndex];
+  if(m.type==='video'){
+    wrap.innerHTML=`<video src="${m.url}" controls autoplay style="max-width:100%;max-height:55vh;border-radius:8px"></video>`;
+  } else {
+    wrap.innerHTML=`<img src="${m.url}" alt="${esc(m.name||'')}" style="max-width:100%;max-height:55vh;object-fit:contain;border-radius:8px">`;
+  }
+  info.textContent=`${lbIndex+1} / ${p.media.length}${m.name?' · '+m.name:''}`;
+}
+function renderLbStrip(){
+  const p=lbProject;
+  const strip=document.getElementById('lb-strip');
+  if(!p.media.length){strip.innerHTML='';return;}
+  strip.innerHTML=p.media.map((m,i)=>{
+    const inner=m.type==='video'
+      ?`<video src="${m.url}" muted style="width:100%;height:100%;object-fit:cover"></video>`
+      :`<img src="${m.url}" style="width:100%;height:100%;object-fit:cover">`;
+    return `<div class="lb-strip-item${i===lbIndex?' active':''}" onclick="lbGo(${i})">${inner}</div>`;
+  }).join('');
+}
+function lbGo(i){lbIndex=i;renderLbMedia();renderLbStrip();}
+document.getElementById('lightbox').addEventListener('click',function(e){if(e.target===this)closeLightbox()});
+document.addEventListener('keydown',function(e){
+  if(!document.getElementById('lightbox').classList.contains('open'))return;
+  if(e.key==='Escape')closeLightbox();
+  if(e.key==='ArrowRight')lbNav(1);
+  if(e.key==='ArrowLeft')lbNav(-1);
+});
+
+// ─── ADMIN PANEL ───
+function toggleAdmin(){document.getElementById('admin-panel').classList.toggle('open');}
+document.getElementById('admin-panel').addEventListener('click',function(e){if(e.target===this)toggleAdmin()});
+
+function switchAdminTab(name,el){
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ap').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('ap-'+name).classList.add('active');
+}
+
+// ─── ADMIN PROJECT LIST ───
+function renderAdminList(){
+  const el=document.getElementById('admin-project-list');
+  el.innerHTML=projects.map(p=>`
+    <div class="proj-row">
+      <div class="proj-row-icon">${p.icon}</div>
+      <div class="proj-row-info">
+        <div class="prn">${esc(p.name)}</div>
+        <div class="prm">${p.techs.slice(0,2).join(' · ')}${p.media.length?' · '+p.media.length+' media':''}</div>
+      </div>
+      <div class="proj-row-actions">
+        <button class="abtn" onclick="openEditForm(${p.id})">✏ Edit</button>
+        <button class="abtn danger" onclick="deleteProject(${p.id})">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+// ─── ADD FORM ───
+function openAddForm(){
+  editingId=null;
+  tempMedia=[];
+  tempTechs=['Unity','C#','VR'];
+  renderProjectForm({id:null,icon:'🎮',name:'',desc:'',techs:[],media:[],link:''},true);
+}
+function openEditForm(id){
+  const p=projects.find(x=>x.id===id);
+  if(!p)return;
+  editingId=id;
+  tempMedia=[...p.media];
+  tempTechs=[...p.techs];
+  renderProjectForm(p,false);
+}
+function renderProjectForm(p,isNew){
+  const c=document.getElementById('add-form-container');
+  c.innerHTML=`<div class="edit-form">
+    <div class="ef-title">
+      <span>${isNew?'New project':'Editing: '+esc(p.name)}</span>
+      <button class="abtn" onclick="closeForm()">✕</button>
+    </div>
+    <div class="row2f">
+      <div class="field"><label>Project name</label><input id="ef-name" value="${esc(p.name)}" placeholder="e.g. VR Welding Sim"></div>
+      <div class="field"><label>Icon</label><input id="ef-icon" value="${p.icon}" placeholder="🎮"></div>
+    </div>
+    <div class="field"><label>Description</label><textarea id="ef-desc">${esc(p.desc)}</textarea></div>
+    <div class="field"><label>Demo / project link</label><input id="ef-link" value="${esc(p.link||'')}" placeholder="https://..."></div>
+    <div class="field">
+      <label>Tech stack</label>
+      <div id="ef-tags" class="tag-row"></div>
+      <div class="add-tag-row">
+        <input id="ef-tag-input" placeholder="Add tech..." onkeydown="if(event.key==='Enter'){addTag();event.preventDefault()}">
+        <button onclick="addTag()">+ Add</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Images &amp; videos</label>
+      <div id="ef-media-thumbs" class="media-thumbs"></div>
+      <div class="media-upload-area" onclick="document.getElementById('ef-file').click()">
+        <span style="font-size:22px">📁</span>
+        <p>Click to upload images or videos</p>
+      </div>
+      <input type="file" id="ef-file" accept="image/*,video/*" multiple style="display:none" onchange="handleUpload(event)">
+    </div>
+    <div class="form-actions">
+      <button class="fab" onclick="closeForm()">Cancel</button>
+      <button class="fab save" onclick="saveProject(${isNew})">✓ ${isNew?'Add project':'Save changes'}</button>
+    </div>
+  </div>`;
+  renderTags();
+  renderMediaThumbs();
+}
+function closeForm(){document.getElementById('add-form-container').innerHTML='';}
+
+function renderTags(){
+  const el=document.getElementById('ef-tags');
+  if(!el)return;
+  el.innerHTML=tempTechs.map((t,i)=>`<span class="etag">${esc(t)}<span class="rx" onclick="removeTag(${i})">×</span></span>`).join('');
+}
+function addTag(){
+  const inp=document.getElementById('ef-tag-input');
+  const v=inp.value.trim();
+  if(v&&!tempTechs.includes(v)){tempTechs.push(v);renderTags();}
+  inp.value='';inp.focus();
+}
+function removeTag(i){tempTechs.splice(i,1);renderTags();}
+
+function renderMediaThumbs(){
+  const el=document.getElementById('ef-media-thumbs');
+  if(!el)return;
+  el.innerHTML=tempMedia.map((m,i)=>{
+    const inner=m.type==='video'
+      ?`<video src="${m.url}" muted style="width:100%;height:100%;object-fit:cover"></video>`
+      :`<img src="${m.url}" alt="">`;
+    return `<div class="mthumb">${inner}<div class="mdel"><button class="mdel-btn" onclick="removeMedia(${i})">✕</button></div></div>`;
+  }).join('');
+}
+function handleUpload(e){
+  Array.from(e.target.files).forEach(f=>{
+    const isVid=f.type.startsWith('video');
+    tempMedia.push({url:URL.createObjectURL(f),name:f.name,type:isVid?'video':'image'});
+  });
+  renderMediaThumbs();
+  e.target.value='';
+}
+function removeMedia(i){tempMedia.splice(i,1);renderMediaThumbs();}
+
+function saveProject(isNew){
+  const name=document.getElementById('ef-name').value.trim();
+  if(!name){alert('Project name is required.');return;}
+  const desc=document.getElementById('ef-desc').value.trim();
+  const icon=document.getElementById('ef-icon').value.trim()||'🎮';
+  const link=document.getElementById('ef-link').value.trim();
+  if(isNew){
+    projects.push({id:nextId++,icon,name,desc,techs:[...tempTechs],media:[...tempMedia],link});
+  } else {
+    const p=projects.find(x=>x.id===editingId);
+    if(p)Object.assign(p,{icon,name,desc,techs:[...tempTechs],media:[...tempMedia],link});
+  }
+  closeForm();
+  renderProjects();
+  renderAdminList();
+  toast(isNew?'Project added ✓':'Changes saved ✓');
+}
+function deleteProject(id){
+  if(!confirm('Delete this project?'))return;
+  projects=projects.filter(x=>x.id!==id);
+  renderProjects();
+  renderAdminList();
+  toast('Project deleted');
+}
+
+// ─── SITE SETTINGS ───
+function saveSettings(){
+  document.getElementById('hero-name-line1').textContent=document.getElementById('s-name1').value||'Mayur';
+  document.getElementById('hero-name-line2').textContent=document.getElementById('s-name2').value||'Waghmare';
+  document.getElementById('hero-tagline').textContent=document.getElementById('s-tagline').value;
+  document.getElementById('contact-heading').textContent=document.getElementById('s-contact-h').value;
+  document.getElementById('contact-sub').textContent=document.getElementById('s-contact-sub').value;
+  const email=document.getElementById('s-email').value;
+  const linkedin=document.getElementById('s-linkedin').value;
+  const phone=document.getElementById('s-phone').value;
+  const clinks=document.querySelector('.contact-links');
+  clinks.innerHTML=`
+    <a href="mailto:${esc(email)}" class="btn btn-primary">${esc(email)}</a>
+    <a href="${esc(linkedin)}" target="_blank" class="btn btn-outline">LinkedIn ↗</a>
+    <a href="tel:${esc(phone.replace(/\s/g,''))}" class="btn btn-outline">${esc(phone)}</a>`;
+  toast('Settings saved ✓');
+}
+
+// ─── INIT ───
+renderProjects();
+renderAdminList();
+</script>
+</body>
+</html>
