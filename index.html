@@ -127,6 +127,22 @@ h2.section-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:600;letter-spaci
 .contact-box p{color:var(--text2);margin-bottom:2rem}
 .contact-links{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
 
+/* RESUME SECTION */
+.resume-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2.5rem;display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center;max-width:700px;margin:0 auto}
+.resume-card-left{}
+.resume-card-left h3{font-size:1.1rem;font-weight:500;margin-bottom:.4rem}
+.resume-card-left p{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:1.25rem}
+.resume-meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:1.5rem}
+.resume-meta-item{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--text3)}
+.resume-meta-item span{color:var(--text2)}
+.resume-actions{display:flex;gap:10px;flex-wrap:wrap}
+.resume-preview-icon{width:90px;height:115px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex-shrink:0}
+.resume-preview-icon .pdf-icon{font-size:2rem}
+.resume-preview-icon small{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.resume-no-upload{text-align:center;padding:2rem;color:var(--text3);font-size:13px;border:1px dashed var(--border);border-radius:var(--radius-lg);max-width:700px;margin:0 auto}
+.resume-no-upload p{margin-top:.5rem;font-size:12px}
+@media(max-width:600px){.resume-card{grid-template-columns:1fr}.resume-preview-icon{display:none}}
+
 /* LOGIN SCREEN */
 #login-screen{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.93);align-items:center;justify-content:center}
 #login-screen.open{display:flex}
@@ -272,6 +288,7 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
     <li><a href="#skills">Skills</a></li>
     <li><a href="#experience">Experience</a></li>
     <li><a href="#projects">Projects</a></li>
+    <li><a href="#resume">Resume</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
   <a id="nav-email-link" href="mailto:mayurw81@gmail.com" class="nav-cta">Hire me</a>
@@ -282,6 +299,7 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
   <a href="#skills" onclick="toggleMenu()">Skills</a>
   <a href="#experience" onclick="toggleMenu()">Experience</a>
   <a href="#projects" onclick="toggleMenu()">Projects</a>
+  <a href="#resume" onclick="toggleMenu()">Resume</a>
   <a href="#contact" onclick="toggleMenu()">Contact</a>
 </div>
 
@@ -379,6 +397,21 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
 </section>
 <div class="section-divider"></div>
 
+<!-- RESUME -->
+<section class="section" id="resume">
+  <div class="section-eyebrow">Download</div>
+  <h2 class="section-title">Resume</h2>
+  <div id="resume-public-content">
+    <!-- filled by JS -->
+    <div class="resume-no-upload">
+      <div style="font-size:2rem">📄</div>
+      <p>Resume not uploaded yet.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
 <!-- CONTACT -->
 <section class="section" id="contact">
   <div class="section-eyebrow">Let's talk</div>
@@ -442,7 +475,8 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
 
       <div class="admin-tabs">
         <button class="admin-tab active" onclick="switchAdminTab('projects',this)">Projects</button>
-        <button class="admin-tab" onclick="switchAdminTab('settings',this)">Site settings</button>
+        <button class="admin-tab" onclick="switchAdminTab('resume',this)">Resume</button>
+        <button class="admin-tab" onclick="switchAdminTab('settings',this)">Settings</button>
         <button class="admin-tab" onclick="switchAdminTab('firebase',this)">Firebase</button>
       </div>
 
@@ -451,6 +485,26 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
         <button class="add-new-btn" onclick="openAddForm()">+ Add new project</button>
         <div id="add-form-container"></div>
         <div id="admin-project-list"></div>
+      </div>
+
+      <!-- RESUME TAB -->
+      <div class="ap" id="ap-resume">
+        <div id="resume-admin-current" style="margin-bottom:1rem"></div>
+        <div class="settings-section">
+          <h3>Upload Resume (PDF)</h3>
+        </div>
+        <div class="media-upload-area" id="resume-drop-area" onclick="document.getElementById('resume-file-input').click()" style="margin-bottom:10px">
+          <span style="font-size:28px">📄</span>
+          <p>Click to upload a PDF resume</p>
+          <p style="font-size:11px;margin-top:4px;color:var(--text3)">Max 10MB · PDF only</p>
+          <div class="upload-progress" id="resume-upload-progress"></div>
+        </div>
+        <input type="file" id="resume-file-input" accept="application/pdf" style="display:none" onchange="uploadResume(event)">
+        <div id="resume-upload-status" style="font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;padding:4px 0"></div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1rem;font-size:12px;color:var(--text2);line-height:1.8;margin-top:10px">
+          <strong style="color:var(--text)">What visitors see:</strong><br>
+          A download card with your name, file size, upload date, and a Download button. The resume PDF opens directly in their browser.
+        </div>
       </div>
 
       <!-- SETTINGS TAB -->
@@ -552,6 +606,7 @@ function initFirebase(cfg) {
     setFbStatus(true);
     loadProjectsFromFirebase();
     loadSettingsFromFirebase();
+    loadResumeFromFirebase();
     toast('Firebase connected ✓');
     // populate config fields
     document.getElementById('fb-apiKey').value = cfg.apiKey || '';
@@ -968,6 +1023,128 @@ async function saveSettings() {
   } else { toast('Settings applied (connect Firebase to persist)'); }
 }
 window.saveSettings=saveSettings;
+
+// ─── RESUME ───
+async function loadResumeFromFirebase() {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'resume'));
+    if (snap.exists()) renderResumePublic(snap.data());
+    renderResumeAdmin(snap.exists() ? snap.data() : null);
+  } catch(e) {
+    renderResumeAdmin(null);
+  }
+}
+
+function renderResumePublic(data) {
+  const el = document.getElementById('resume-public-content');
+  if (!data || !data.url) {
+    el.innerHTML = `<div class="resume-no-upload"><div style="font-size:2rem">📄</div><p>Resume not uploaded yet.</p></div>`;
+    return;
+  }
+  const date = data.uploadedAt ? new Date(data.uploadedAt).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '';
+  const size = data.size ? formatBytes(data.size) : '';
+  el.innerHTML = `
+    <div class="resume-card">
+      <div class="resume-card-left">
+        <h3>Mayur Waghmare — Resume</h3>
+        <p>Full CV including experience, skills, education, and project details as an XR / VR Game Developer.</p>
+        <div class="resume-meta">
+          <div class="resume-meta-item">📄 <span>PDF Document</span></div>
+          ${size ? `<div class="resume-meta-item">💾 <span>${size}</span></div>` : ''}
+          ${date ? `<div class="resume-meta-item">🗓 <span>Updated ${date}</span></div>` : ''}
+        </div>
+        <div class="resume-actions">
+          <a href="${esc(data.url)}" target="_blank" class="btn btn-primary" download>⬇ Download Resume</a>
+          <a href="${esc(data.url)}" target="_blank" class="btn btn-outline">👁 Preview</a>
+        </div>
+      </div>
+      <div class="resume-preview-icon">
+        <div class="pdf-icon">📄</div>
+        <small>PDF</small>
+      </div>
+    </div>`;
+}
+
+function renderResumeAdmin(data) {
+  const el = document.getElementById('resume-admin-current');
+  if (!el) return;
+  if (!data || !data.url) {
+    el.innerHTML = `<div style="background:var(--surface2);border:1px dashed var(--border);border-radius:8px;padding:1rem;font-size:12px;color:var(--text3);text-align:center">No resume uploaded yet</div>`;
+    return;
+  }
+  const date = data.uploadedAt ? new Date(data.uploadedAt).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '';
+  const size = data.size ? formatBytes(data.size) : '';
+  el.innerHTML = `
+    <div style="background:var(--surface2);border:1px solid rgba(79,195,161,0.25);border-radius:8px;padding:1rem;display:flex;align-items:center;gap:12px">
+      <div style="font-size:1.8rem;flex-shrink:0">📄</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;color:var(--teal)">Current resume</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${data.fileName||'resume.pdf'}${size?' · '+size:''}${date?' · '+date:''}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <a href="${esc(data.url)}" target="_blank" class="abtn">👁 View</a>
+        <button class="abtn danger" onclick="deleteResume()">🗑</button>
+      </div>
+    </div>`;
+}
+
+async function uploadResume(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.type !== 'application/pdf') { toast('Only PDF files allowed', true); return; }
+  if (file.size > 10*1024*1024) { toast('File must be under 10MB', true); return; }
+  if (!storage || !db) { toast('Connect Firebase first', true); return; }
+
+  const statusEl = document.getElementById('resume-upload-status');
+  const bar = document.getElementById('resume-upload-progress');
+  statusEl.textContent = 'Uploading…';
+
+  const path = `resume/mayur_waghmare_resume_${Date.now()}.pdf`;
+  const storageRef = ref(storage, path);
+  const task = uploadBytesResumable(storageRef, file);
+
+  task.on('state_changed',
+    snap => {
+      const pct = (snap.bytesTransferred / snap.totalBytes) * 100;
+      if (bar) bar.style.width = pct + '%';
+      statusEl.textContent = `Uploading… ${Math.round(pct)}%`;
+    },
+    err => { toast('Upload failed: ' + err.message, true); statusEl.textContent=''; if(bar) bar.style.width='0'; },
+    async () => {
+      const url = await getDownloadURL(storageRef);
+      const data = { url, fileName: file.name, size: file.size, storagePath: path, uploadedAt: Date.now() };
+      await setDoc(doc(db, 'settings', 'resume'), data);
+      if(bar) bar.style.width='0';
+      statusEl.textContent = '';
+      renderResumePublic(data);
+      renderResumeAdmin(data);
+      toast('Resume uploaded successfully ✓');
+    }
+  );
+  e.target.value = '';
+}
+window.uploadResume = uploadResume;
+
+async function deleteResume() {
+  if (!confirm('Remove the current resume? Visitors will no longer see it.')) return;
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'resume'));
+    if (snap.exists() && snap.data().storagePath) {
+      try { await deleteObject(ref(storage, snap.data().storagePath)); } catch(e){}
+    }
+    await deleteDoc(doc(db, 'settings', 'resume'));
+    renderResumePublic(null);
+    renderResumeAdmin(null);
+    toast('Resume removed');
+  } catch(e) { toast('Delete failed: ' + e.message, true); }
+}
+window.deleteResume = deleteResume;
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
 
 // ─── BOOT ───
 const savedCfg = loadFirebaseConfig();
