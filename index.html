@@ -245,11 +245,12 @@ h2.section-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:600;letter-spaci
 /* SETTINGS */
 .settings-section{margin-bottom:1.5rem}
 .settings-section h3{font-size:12px;font-family:var(--mono);color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border2)}
-.setting-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border2);gap:12px}
-.setting-label{font-size:13px;color:var(--text2);flex-shrink:0}.setting-label small{display:block;font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--mono)}
-.setting-row input[type=text]{flex:1;max-width:200px;font-size:12px;padding:5px 9px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:5px;outline:none}
+.setting-row{display:flex;flex-direction:column;gap:5px;padding:8px 0;border-bottom:1px solid var(--border2)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:12px;color:var(--text2);font-family:var(--mono)}.setting-label small{display:block;font-size:10px;color:var(--text3);margin-top:1px}
+.setting-row input[type=text]{width:100%;font-size:12px;padding:7px 10px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;outline:none;font-family:var(--font)}
 .setting-row input:focus{border-color:var(--accent)}
-.save-settings-btn{width:100%;padding:9px;font-family:var(--mono);font-size:12px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;margin-top:1rem;transition:background .2s;letter-spacing:.04em}
+.save-settings-btn{width:100%;padding:10px;font-family:var(--mono);font-size:12px;background:var(--accent);border:none;color:#fff;border-radius:7px;cursor:pointer;margin-top:1rem;transition:background .2s;letter-spacing:.04em}
 .save-settings-btn:hover{background:#6948e8}
 
 /* TOAST */
