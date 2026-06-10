@@ -539,14 +539,11 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
           <input type="text" id="fb-appId" placeholder="appId">
           <button class="connect-btn" onclick="saveFirebaseConfig()">Connect to Firebase</button>
         </div>
-        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1rem;font-size:12px;color:var(--text2);line-height:1.8">
-          <strong style="color:var(--text);font-size:13px">How to get your Firebase config:</strong><br>
-          1. Go to <a href="https://console.firebase.google.com" target="_blank" style="color:var(--accent)">console.firebase.google.com</a><br>
-          2. Create a project → Add a Web App<br>
-          3. Copy the <code style="color:var(--teal)">firebaseConfig</code> object values<br>
-          4. In Firebase console → Storage → Get started (set rules to allow read/write)<br>
-          5. In Firestore → Create database (start in test mode)<br>
-          6. Paste config above and click Connect
+
+        <div style="background:var(--surface2);border:1px solid rgba(79,195,161,0.2);border-radius:8px;padding:1rem;font-size:12px;color:var(--text2);line-height:1.8">
+          <strong style="color:var(--teal);font-size:13px">✅ Cloudinary handles all file uploads</strong><br>
+          Images, videos, and PDFs are uploaded directly to Cloudinary (free, no CORS issues).<br>
+          Firebase Firestore is used only for saving project data and settings — no Storage needed.
         </div>
       </div>
 
@@ -560,10 +557,28 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
+// ─── CLOUDINARY CONFIG ───
+const CLOUDINARY_CLOUD = 'dcu5agcea';
+const CLOUDINARY_PRESET = 'portfolio_uploads';
+async function cloudinaryUpload(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  fd.append('folder', 'portfolio');
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
+    method: 'POST', body: fd
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.error?.message || 'Cloudinary upload failed');
+  }
+  const data = await res.json();
+  return { url: data.secure_url, publicId: data.public_id, resourceType: data.resource_type };
+}
 
 // ─── STATE ───
-let db = null, storage = null, fbApp = null;
+let db = null, fbApp = null;
 let projects = [];
 let nextLocalId = 1000;
 let editingId = null;
@@ -602,7 +617,6 @@ function initFirebase(cfg) {
   try {
     fbApp = initializeApp(cfg);
     db = getFirestore(fbApp);
-    storage = getStorage(fbApp);
     setFbStatus(true);
     loadProjectsFromFirebase();
     loadSettingsFromFirebase();
@@ -915,6 +929,7 @@ window.removeTag=removeTag;
 function renderMediaThumbs(){
   const el=document.getElementById('ef-media-thumbs'); if(!el) return;
   el.innerHTML=tempMedia.map((m,i)=>{
+    if(m.uploading) return `<div class="mthumb mthumb-loading"><div class="spinner"></div></div>`;
     const inner = m.type==='video'
       ?`<video src="${esc(m.url)}" muted style="width:100%;height:100%;object-fit:cover"></video>`
       :`<img src="${esc(m.url)}" alt="">`;
@@ -924,42 +939,39 @@ function renderMediaThumbs(){
 async function handleUpload(e) {
   const files = Array.from(e.target.files);
   if (!files.length) return;
-  if (!storage) {
-    // No Firebase — use object URL for local preview only
-    files.forEach(f=>{
-      tempMedia.push({url:URL.createObjectURL(f),name:f.name,type:f.type.startsWith('video')?'video':'image',isNew:true,file:f,storageRef:null});
-    }); renderMediaThumbs(); e.target.value=''; return;
-  }
   const btn = document.getElementById('save-btn'); if(btn) btn.disabled=true;
   const bar = document.getElementById('upload-progress');
-  let done=0;
+  let done=0, failed=0;
   for (const f of files) {
     const isVid = f.type.startsWith('video');
-    const path = `projects/${Date.now()}_${f.name}`;
-    const storageRef = ref(storage, path);
-    await new Promise((res,rej)=>{
-      const task = uploadBytesResumable(storageRef, f);
-      task.on('state_changed', snap=>{
-        const pct = (done/files.length + snap.bytesTransferred/snap.totalBytes/files.length)*100;
-        if(bar) bar.style.width=pct+'%';
-      }, rej, async ()=>{
-        const url = await getDownloadURL(storageRef);
-        tempMedia.push({url,name:f.name,type:isVid?'video':'image',isNew:true,storageRef:path});
-        done++; renderMediaThumbs(); res();
-      });
-    });
+    if(bar) bar.style.width = ((done/files.length)*100)+'%';
+    // Show local preview immediately
+    const localUrl = URL.createObjectURL(f);
+    const idx = tempMedia.length;
+    tempMedia.push({url:localUrl, name:f.name, type:isVid?'video':'image', uploading:true});
+    renderMediaThumbs();
+    try {
+      const result = await cloudinaryUpload(f);
+      // Replace local preview with permanent Cloudinary URL
+      tempMedia[idx] = {url:result.url, name:f.name, type:isVid?'video':'image', publicId:result.publicId};
+      done++;
+      renderMediaThumbs();
+      if(bar) bar.style.width = ((done/files.length)*100)+'%';
+    } catch(err) {
+      console.error('Upload error:', err);
+      tempMedia.splice(idx,1);
+      failed++;
+      toast('Upload failed: ' + err.message, true);
+      renderMediaThumbs();
+    }
   }
   if(bar) bar.style.width='0';
   if(btn) btn.disabled=false;
   e.target.value='';
-  toast(`${files.length} file${files.length>1?'s':''} uploaded ✓`);
+  if(done>0) toast(`${done} file${done>1?'s':''} uploaded ✓`);
 }
 window.handleUpload=handleUpload;
 async function removeMedia(i) {
-  const m = tempMedia[i];
-  if (m.storageRef && storage && !m.isNew) {
-    try { await deleteObject(ref(storage, m.storageRef)); } catch(e){}
-  }
   tempMedia.splice(i,1); renderMediaThumbs();
 }
 window.removeMedia=removeMedia;
@@ -1093,34 +1105,38 @@ async function uploadResume(e) {
   if (!file) return;
   if (file.type !== 'application/pdf') { toast('Only PDF files allowed', true); return; }
   if (file.size > 10*1024*1024) { toast('File must be under 10MB', true); return; }
-  if (!storage || !db) { toast('Connect Firebase first', true); return; }
+  if (!db) { toast('Connect Firebase first', true); return; }
 
   const statusEl = document.getElementById('resume-upload-status');
   const bar = document.getElementById('resume-upload-progress');
-  statusEl.textContent = 'Uploading…';
+  const dropArea = document.getElementById('resume-drop-area');
+  statusEl.style.color = 'var(--text3)';
+  statusEl.textContent = 'Uploading to Cloudinary…';
+  if(dropArea) dropArea.style.opacity = '0.6';
+  if(bar) bar.style.width = '30%';
 
-  const path = `resume/mayur_waghmare_resume_${Date.now()}.pdf`;
-  const storageRef = ref(storage, path);
-  const task = uploadBytesResumable(storageRef, file);
-
-  task.on('state_changed',
-    snap => {
-      const pct = (snap.bytesTransferred / snap.totalBytes) * 100;
-      if (bar) bar.style.width = pct + '%';
-      statusEl.textContent = `Uploading… ${Math.round(pct)}%`;
-    },
-    err => { toast('Upload failed: ' + err.message, true); statusEl.textContent=''; if(bar) bar.style.width='0'; },
-    async () => {
-      const url = await getDownloadURL(storageRef);
-      const data = { url, fileName: file.name, size: file.size, storagePath: path, uploadedAt: Date.now() };
-      await setDoc(doc(db, 'settings', 'resume'), data);
-      if(bar) bar.style.width='0';
-      statusEl.textContent = '';
-      renderResumePublic(data);
-      renderResumeAdmin(data);
-      toast('Resume uploaded successfully ✓');
-    }
-  );
+  try {
+    if(bar) bar.style.width = '50%';
+    const result = await cloudinaryUpload(file);
+    if(bar) bar.style.width = '80%';
+    statusEl.textContent = 'Saving to Firebase…';
+    const data = { url: result.url, fileName: file.name, size: file.size, publicId: result.publicId, uploadedAt: Date.now() };
+    await setDoc(doc(db, 'settings', 'resume'), data);
+    if(bar) bar.style.width = '100%';
+    setTimeout(()=>{ if(bar) bar.style.width='0'; }, 600);
+    statusEl.textContent = '';
+    if(dropArea) dropArea.style.opacity = '1';
+    renderResumePublic(data);
+    renderResumeAdmin(data);
+    toast('Resume uploaded successfully ✓');
+  } catch(err) {
+    if(bar) bar.style.width='0';
+    if(dropArea) dropArea.style.opacity = '1';
+    console.error('Resume upload error:', err);
+    statusEl.textContent = '⚠ ' + err.message;
+    statusEl.style.color = 'var(--danger)';
+    toast('Upload failed: ' + err.message, true);
+  }
   e.target.value = '';
 }
 window.uploadResume = uploadResume;
@@ -1128,10 +1144,6 @@ window.uploadResume = uploadResume;
 async function deleteResume() {
   if (!confirm('Remove the current resume? Visitors will no longer see it.')) return;
   try {
-    const snap = await getDoc(doc(db, 'settings', 'resume'));
-    if (snap.exists() && snap.data().storagePath) {
-      try { await deleteObject(ref(storage, snap.data().storagePath)); } catch(e){}
-    }
     await deleteDoc(doc(db, 'settings', 'resume'));
     renderResumePublic(null);
     renderResumeAdmin(null);
