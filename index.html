@@ -570,13 +570,6 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
 <div class="toast" id="toast"></div>
 
 <!-- FIREBASE SDK -->
-<script>
-// Boot admin button immediately — before Firebase loads
-document.getElementById('admin-toggle').addEventListener('click', function() {
-  if (typeof openLogin === 'function') { openLogin(); }
-  else { alert('Page still loading, please wait a moment and try again.'); }
-});
-</script>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -842,6 +835,12 @@ function openLogin() {
   setTimeout(()=>document.getElementById('login-pw').focus(), 100);
 }
 window.openLogin = openLogin;
+
+// ─── ADMIN TOGGLE BUTTON ───
+document.getElementById('admin-toggle').addEventListener('click', function() {
+  openLogin();
+});
+
 function closeLogin() { document.getElementById('login-screen').classList.remove('open'); }
 window.closeLogin = closeLogin;
 function doLogin() {
@@ -1099,7 +1098,8 @@ async function saveDriveResume() {
 }
 window.saveDriveResume = saveDriveResume;
 
-// ─── BOOT ───
+// ─── RENDER RESUME (public) ───
+function renderResumePublic(data) {
   const el = document.getElementById('resume-public-content');
   // Always use Google Drive link — hardcoded + overrideable via Firestore
   const fileId = (data && data.driveId) ? data.driveId : '1E465BLKm27a7jllugbM5hTORcEUvq2fq';
@@ -1125,6 +1125,7 @@ window.saveDriveResume = saveDriveResume;
       </div>
     </div>`;
 }
+window.renderResumePublic = renderResumePublic;
 
 // ─── BOOT ───
 const savedCfg = loadFirebaseConfig();
