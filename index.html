@@ -1047,6 +1047,25 @@ async function loadResumeFromFirebase() {
   }
 }
 
+// ─── RESUME URL HELPERS ───
+function makeDownloadUrl(url) {
+  // Cloudinary: add fl_attachment to force download
+  if (url && url.includes('cloudinary.com')) {
+    return url.replace('/upload/', '/upload/fl_attachment/');
+  }
+  return url;
+}
+function makePreviewUrl(url) {
+  // Cloudinary: convert to image preview of first page for PDFs
+  // or use Google Docs viewer as fallback for in-browser preview
+  if (url && url.includes('cloudinary.com')) {
+    // Replace .pdf extension with .jpg for first-page preview image,
+    // but for actual PDF viewing use Google Docs viewer
+    return 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
+  }
+  return 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
+}
+
 function renderResumePublic(data) {
   const el = document.getElementById('resume-public-content');
   if (!data || !data.url) {
@@ -1066,8 +1085,8 @@ function renderResumePublic(data) {
           ${date ? `<div class="resume-meta-item">🗓 <span>Updated ${date}</span></div>` : ''}
         </div>
         <div class="resume-actions">
-          <a href="${esc(data.url)}" target="_blank" class="btn btn-primary" download>⬇ Download Resume</a>
-          <a href="${esc(data.url)}" target="_blank" class="btn btn-outline">👁 Preview</a>
+          <a href="${makeDownloadUrl(data.url)}" class="btn btn-primary" download="Mayur_Waghmare_Resume.pdf">⬇ Download Resume</a>
+          <a href="${makePreviewUrl(data.url)}" target="_blank" class="btn btn-outline">👁 Preview</a>
         </div>
       </div>
       <div class="resume-preview-icon">
@@ -1094,7 +1113,7 @@ function renderResumeAdmin(data) {
         <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${data.fileName||'resume.pdf'}${size?' · '+size:''}${date?' · '+date:''}</div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
-        <a href="${esc(data.url)}" target="_blank" class="abtn">👁 View</a>
+        <a href="${esc(makePreviewUrl(data.url))}" target="_blank" class="abtn">👁 View</a>
         <button class="abtn danger" onclick="deleteResume()">🗑</button>
       </div>
     </div>`;
