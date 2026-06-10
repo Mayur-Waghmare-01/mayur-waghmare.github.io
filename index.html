@@ -489,21 +489,26 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
 
       <!-- RESUME TAB -->
       <div class="ap" id="ap-resume">
-        <div id="resume-admin-current" style="margin-bottom:1rem"></div>
         <div class="settings-section">
-          <h3>Upload Resume (PDF)</h3>
+          <h3>Resume — Google Drive</h3>
         </div>
-        <div class="media-upload-area" id="resume-drop-area" onclick="document.getElementById('resume-file-input').click()" style="margin-bottom:10px">
-          <span style="font-size:28px">📄</span>
-          <p>Click to upload a PDF resume</p>
-          <p style="font-size:11px;margin-top:4px;color:var(--text3)">Max 10MB · PDF only</p>
-          <div class="upload-progress" id="resume-upload-progress"></div>
+        <div style="background:rgba(79,195,161,0.08);border:1px solid rgba(79,195,161,0.25);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:12px;color:var(--text2);line-height:1.8">
+          <strong style="color:var(--teal)">✅ Currently linked to Google Drive</strong><br>
+          Visitors can download and preview your resume directly from Google Drive. To update, paste a new shareable link below.
         </div>
-        <input type="file" id="resume-file-input" accept="application/pdf" style="display:none" onchange="uploadResume(event)">
-        <div id="resume-upload-status" style="font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;padding:4px 0"></div>
-        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1rem;font-size:12px;color:var(--text2);line-height:1.8;margin-top:10px">
-          <strong style="color:var(--text)">What visitors see:</strong><br>
-          A download card with your name, file size, upload date, and a Download button. The resume PDF opens directly in their browser.
+        <div class="field">
+          <label>Google Drive shareable link</label>
+          <input type="text" id="resume-drive-link" placeholder="https://drive.google.com/file/d/xxxxx/view?usp=sharing" value="https://drive.google.com/file/d/1E465BLKm27a7jllugbM5hTORcEUvq2fq/view?usp=sharing">
+        </div>
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:1rem;line-height:1.7">
+          Make sure sharing is set to <strong style="color:var(--text2)">"Anyone with the link"</strong> in Google Drive
+        </div>
+        <button class="save-settings-btn" onclick="saveDriveResume()">Save resume link</button>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:1rem;font-size:12px;color:var(--text2);line-height:1.8;margin-top:1rem">
+          <strong style="color:var(--text)">To update your resume:</strong><br>
+          1. Upload new PDF to Google Drive<br>
+          2. Right-click → Share → Anyone with link → Copy<br>
+          3. Paste above and click Save
         </div>
       </div>
 
@@ -1040,42 +1045,48 @@ async function saveSettings() {
 window.saveSettings=saveSettings;
 
 // ─── RESUME ───
+const DEFAULT_DRIVE_ID = '1E465BLKm27a7jllugbM5hTORcEUvq2fq';
+
 async function loadResumeFromFirebase() {
   try {
     const snap = await getDoc(doc(db, 'settings', 'resume'));
-    if (snap.exists()) renderResumePublic(snap.data());
-    renderResumeAdmin(snap.exists() ? snap.data() : null);
-  } catch(e) {
-    renderResumeAdmin(null);
-  }
-}
-
-// ─── RESUME URL HELPERS ───
-function makeDownloadUrl(url) {
-  if (!url) return url;
-  if (url.includes('cloudinary.com')) {
-    // PDFs are stored under /raw/upload/ — add fl_attachment for forced download
-    if (url.includes('/raw/upload/')) {
-      return url.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+    if (snap.exists() && snap.data().driveId) {
+      const driveId = snap.data().driveId;
+      document.getElementById('resume-drive-link').value =
+        `https://drive.google.com/file/d/${driveId}/view?usp=sharing`;
+      renderResumePublic({ driveId });
+    } else {
+      renderResumePublic(null); // uses default hardcoded ID
     }
-    // Fallback for image type
-    return url.replace('/upload/', '/upload/fl_attachment/');
+  } catch(e) {
+    renderResumePublic(null);
   }
-  return url;
-}
-function makePreviewUrl(url) {
-  // Use Google Docs Viewer — works for any publicly accessible PDF
-  return 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
 }
 
-function renderResumePublic(data) {
-  const el = document.getElementById('resume-public-content');
-  if (!data || !data.url) {
-    el.innerHTML = `<div class="resume-no-upload"><div style="font-size:2rem">📄</div><p>Resume not uploaded yet.</p></div>`;
-    return;
+async function saveDriveResume() {
+  const raw = document.getElementById('resume-drive-link').value.trim();
+  const match = raw.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (!match) { toast('Invalid Google Drive link — make sure it contains /d/FILE_ID/', true); return; }
+  const driveId = match[1];
+  if (db) {
+    try {
+      await setDoc(doc(db, 'settings', 'resume'), { driveId });
+      renderResumePublic({ driveId });
+      toast('Resume link saved ✓');
+    } catch(e) { toast('Save failed: ' + e.message, true); }
+  } else {
+    renderResumePublic({ driveId });
+    toast('Link applied (connect Firebase to persist)');
   }
-  const date = data.uploadedAt ? new Date(data.uploadedAt).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '';
-  const size = data.size ? formatBytes(data.size) : '';
+}
+window.saveDriveResume = saveDriveResume;
+
+// ─── BOOT ───
+  const el = document.getElementById('resume-public-content');
+  // Always use Google Drive link — hardcoded + overrideable via Firestore
+  const fileId = (data && data.driveId) ? data.driveId : '1E465BLKm27a7jllugbM5hTORcEUvq2fq';
+  const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+  const previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
   el.innerHTML = `
     <div class="resume-card">
       <div class="resume-card-left">
@@ -1083,12 +1094,11 @@ function renderResumePublic(data) {
         <p>Full CV including experience, skills, education, and project details as an XR / VR Game Developer.</p>
         <div class="resume-meta">
           <div class="resume-meta-item">📄 <span>PDF Document</span></div>
-          ${size ? `<div class="resume-meta-item">💾 <span>${size}</span></div>` : ''}
-          ${date ? `<div class="resume-meta-item">🗓 <span>Updated ${date}</span></div>` : ''}
+          <div class="resume-meta-item">☁ <span>Google Drive</span></div>
         </div>
         <div class="resume-actions">
-          <a href="${makeDownloadUrl(data.url)}" class="btn btn-primary" download="Mayur_Waghmare_Resume.pdf">⬇ Download Resume</a>
-          <a href="${makePreviewUrl(data.url)}" target="_blank" class="btn btn-outline">👁 Preview</a>
+          <a href="${downloadUrl}" class="btn btn-primary" target="_blank">⬇ Download Resume</a>
+          <a href="${previewUrl}" target="_blank" class="btn btn-outline">👁 Preview</a>
         </div>
       </div>
       <div class="resume-preview-icon">
@@ -1098,91 +1108,10 @@ function renderResumePublic(data) {
     </div>`;
 }
 
-function renderResumeAdmin(data) {
-  const el = document.getElementById('resume-admin-current');
-  if (!el) return;
-  if (!data || !data.url) {
-    el.innerHTML = `<div style="background:var(--surface2);border:1px dashed var(--border);border-radius:8px;padding:1rem;font-size:12px;color:var(--text3);text-align:center">No resume uploaded yet</div>`;
-    return;
-  }
-  const date = data.uploadedAt ? new Date(data.uploadedAt).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}) : '';
-  const size = data.size ? formatBytes(data.size) : '';
-  el.innerHTML = `
-    <div style="background:var(--surface2);border:1px solid rgba(79,195,161,0.25);border-radius:8px;padding:1rem;display:flex;align-items:center;gap:12px">
-      <div style="font-size:1.8rem;flex-shrink:0">📄</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:500;color:var(--teal)">Current resume</div>
-        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px">${data.fileName||'resume.pdf'}${size?' · '+size:''}${date?' · '+date:''}</div>
-      </div>
-      <div style="display:flex;gap:6px;flex-shrink:0">
-        <a href="${esc(makePreviewUrl(data.url))}" target="_blank" class="abtn">👁 View</a>
-        <button class="abtn danger" onclick="deleteResume()">🗑</button>
-      </div>
-    </div>`;
-}
-
-async function uploadResume(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  if (file.type !== 'application/pdf') { toast('Only PDF files allowed', true); return; }
-  if (file.size > 10*1024*1024) { toast('File must be under 10MB', true); return; }
-  if (!db) { toast('Connect Firebase first', true); return; }
-
-  const statusEl = document.getElementById('resume-upload-status');
-  const bar = document.getElementById('resume-upload-progress');
-  const dropArea = document.getElementById('resume-drop-area');
-  statusEl.style.color = 'var(--text3)';
-  statusEl.textContent = 'Uploading to Cloudinary…';
-  if(dropArea) dropArea.style.opacity = '0.6';
-  if(bar) bar.style.width = '30%';
-
-  try {
-    if(bar) bar.style.width = '50%';
-    const result = await cloudinaryUpload(file);
-    if(bar) bar.style.width = '80%';
-    statusEl.textContent = 'Saving to Firebase…';
-    const data = { url: result.url, fileName: file.name, size: file.size, publicId: result.publicId, uploadedAt: Date.now() };
-    await setDoc(doc(db, 'settings', 'resume'), data);
-    if(bar) bar.style.width = '100%';
-    setTimeout(()=>{ if(bar) bar.style.width='0'; }, 600);
-    statusEl.textContent = '';
-    if(dropArea) dropArea.style.opacity = '1';
-    renderResumePublic(data);
-    renderResumeAdmin(data);
-    toast('Resume uploaded successfully ✓');
-  } catch(err) {
-    if(bar) bar.style.width='0';
-    if(dropArea) dropArea.style.opacity = '1';
-    console.error('Resume upload error:', err);
-    statusEl.textContent = '⚠ ' + err.message;
-    statusEl.style.color = 'var(--danger)';
-    toast('Upload failed: ' + err.message, true);
-  }
-  e.target.value = '';
-}
-window.uploadResume = uploadResume;
-
-async function deleteResume() {
-  if (!confirm('Remove the current resume? Visitors will no longer see it.')) return;
-  try {
-    await deleteDoc(doc(db, 'settings', 'resume'));
-    renderResumePublic(null);
-    renderResumeAdmin(null);
-    toast('Resume removed');
-  } catch(e) { toast('Delete failed: ' + e.message, true); }
-}
-window.deleteResume = deleteResume;
-
-function formatBytes(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
-  return (bytes/(1024*1024)).toFixed(1) + ' MB';
-}
-
 // ─── BOOT ───
 const savedCfg = loadFirebaseConfig();
 if (savedCfg) { initFirebase(savedCfg); }
-else { loadDefaultProjects(); setFbStatus(false); }
+else { loadDefaultProjects(); setFbStatus(false); renderResumePublic(null); }
 
 </script>
 </body>
