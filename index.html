@@ -562,11 +562,14 @@ import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, s
 const CLOUDINARY_CLOUD = 'dcu5agcea';
 const CLOUDINARY_PRESET = 'portfolio_uploads';
 async function cloudinaryUpload(file) {
+  const isPdf = file.type === 'application/pdf';
+  // PDFs must use /raw/upload/, images/videos use /auto/upload/
+  const resourceType = isPdf ? 'raw' : 'auto';
   const fd = new FormData();
   fd.append('file', file);
   fd.append('upload_preset', CLOUDINARY_PRESET);
   fd.append('folder', 'portfolio');
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${resourceType}/upload`, {
     method: 'POST', body: fd
   });
   if (!res.ok) {
@@ -1049,20 +1052,19 @@ async function loadResumeFromFirebase() {
 
 // ─── RESUME URL HELPERS ───
 function makeDownloadUrl(url) {
-  // Cloudinary: add fl_attachment to force download
-  if (url && url.includes('cloudinary.com')) {
+  if (!url) return url;
+  if (url.includes('cloudinary.com')) {
+    // PDFs are stored under /raw/upload/ — add fl_attachment for forced download
+    if (url.includes('/raw/upload/')) {
+      return url.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+    }
+    // Fallback for image type
     return url.replace('/upload/', '/upload/fl_attachment/');
   }
   return url;
 }
 function makePreviewUrl(url) {
-  // Cloudinary: convert to image preview of first page for PDFs
-  // or use Google Docs viewer as fallback for in-browser preview
-  if (url && url.includes('cloudinary.com')) {
-    // Replace .pdf extension with .jpg for first-page preview image,
-    // but for actual PDF viewing use Google Docs viewer
-    return 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
-  }
+  // Use Google Docs Viewer — works for any publicly accessible PDF
   return 'https://docs.google.com/viewer?url=' + encodeURIComponent(url) + '&embedded=true';
 }
 
