@@ -164,6 +164,16 @@ h2.section-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:600;letter-spaci
 #admin-toggle{position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;width:44px;height:44px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
 #admin-toggle:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
 
+/* LOGIN SCREEN */
+#login-screen{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.93);align-items:center;justify-content:center}
+#login-screen.open{display:flex}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2.5rem;width:100%;max-width:340px;text-align:center}
+.login-box h2{font-size:1.2rem;font-weight:600;margin-bottom:.5rem}
+.login-box p{color:var(--text2);font-size:13px;margin-bottom:1.75rem}
+.login-box input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:14px;border-radius:7px;padding:10px 14px;outline:none;margin-bottom:10px;letter-spacing:.1em;text-align:center}
+.login-box input:focus{border-color:var(--accent)}
+.login-box input.shake{animation:shake .3s ease}
+
 /* ADMIN PANEL */
 #admin-panel{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.82)}
 #admin-panel.open{display:flex;align-items:flex-start;justify-content:flex-end;padding:0}
