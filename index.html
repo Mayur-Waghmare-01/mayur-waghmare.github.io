@@ -470,7 +470,7 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
 </div>
 
 <!-- ADMIN TOGGLE -->
-<button id="admin-toggle" onclick="openLogin()" title="Admin panel" aria-label="Admin panel">⚙</button>
+<button id="admin-toggle" title="Admin panel" aria-label="Admin panel">⚙</button>
 
 <!-- ADMIN PANEL -->
 <div id="admin-panel">
@@ -570,6 +570,13 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
 <div class="toast" id="toast"></div>
 
 <!-- FIREBASE SDK -->
+<script>
+// Boot admin button immediately — before Firebase loads
+document.getElementById('admin-toggle').addEventListener('click', function() {
+  if (typeof openLogin === 'function') { openLogin(); }
+  else { alert('Page still loading, please wait a moment and try again.'); }
+});
+</script>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
