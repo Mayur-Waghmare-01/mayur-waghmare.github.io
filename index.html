@@ -338,7 +338,7 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
   <div class="about-grid">
     <div class="about-text">
       <p id="about-p1">XR game developer with <strong>4+ years</strong> of hands-on experience designing and shipping immersive simulations using Unity3D and C#. I specialise in bridging the physical and virtual — building custom hardware integrations that turn real fire extinguishers, welding guns, and plasma cutters into tracked VR controllers.</p>
-      <p id="about-p2">I've worked across the full stack of VR development: from designing mechanics and UI systems to profiling GPU memory and shipping builds on Meta Quest 2, 3, and HTC Vive. Strong on collaboration, agile workflows, and hitting metrics that matter.</p>
+      <p id="about-p2">I've worked across the full stack of VR development: from designing mechanics and UI systems to profiling GPU memory and shipping builds on Meta Quest 2, 3, and HTC Vive, holding 72/90 FPS on standalone headsets with OpenXR, XRI and the Meta XR SDK. Strong on collaboration, agile workflows, and hitting metrics that matter.</p>
       <p id="about-p3">Based in <strong>Mumbai, Maharashtra</strong>. Open to XR roles, simulation projects, and collaborations.</p>
     </div>
     <div class="about-highlights">
@@ -356,10 +356,10 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
   <div class="section-eyebrow">Tech stack</div>
   <h2 class="section-title">Skills</h2>
   <div class="skills-grid">
-    <div class="skill-card"><div class="skill-cat">Languages</div><div class="skill-pills"><span class="skill-pill">C#</span><span class="skill-pill">C++</span><span class="skill-pill">OOP</span><span class="skill-pill">Design Patterns</span><span class="skill-pill">Data Structures</span></div></div>
-    <div class="skill-card"><div class="skill-cat">Engines &amp; Platforms</div><div class="skill-pills"><span class="skill-pill">Unity3D</span><span class="skill-pill">Unreal Engine</span><span class="skill-pill">Meta Quest 2/3</span><span class="skill-pill">HTC Vive</span><span class="skill-pill">Oculus MR</span></div></div>
+    <div class="skill-card"><div class="skill-cat">Languages</div><div class="skill-pills"><span class="skill-pill">C#</span><span class="skill-pill">C++</span><span class="skill-pill">OOP</span><span class="skill-pill">Design Patterns</span><span class="skill-pill">Data Structures</span><span class="skill-pill">SOLID</span><span class="skill-pill">ScriptableObjects</span></div></div>
+    <div class="skill-card"><div class="skill-cat">Engines &amp; Platforms</div><div class="skill-pills"><span class="skill-pill">Unity3D</span><span class="skill-pill">Unreal Engine</span><span class="skill-pill">Meta Quest 2/3</span><span class="skill-pill">HTC Vive</span><span class="skill-pill">Oculus MR</span><span class="skill-pill">OpenXR</span><span class="skill-pill">XR Interaction Toolkit</span><span class="skill-pill">Meta XR SDK</span><span class="skill-pill">URP / HDRP</span></div></div>
     <div class="skill-card"><div class="skill-cat">Specialisations</div><div class="skill-pills"><span class="skill-pill">VR Interactions</span><span class="skill-pill">Shader Integration</span><span class="skill-pill">UI/UX</span><span class="skill-pill">3D Asset Pipelines</span><span class="skill-pill">Custom Hardware</span></div></div>
-    <div class="skill-card"><div class="skill-cat">Tools &amp; Practices</div><div class="skill-pills"><span class="skill-pill">Git</span><span class="skill-pill">Tortoise SVN</span><span class="skill-pill">Profiling</span><span class="skill-pill">Agile / Scrum</span><span class="skill-pill">Cross-platform</span></div></div>
+    <div class="skill-card"><div class="skill-cat">Tools &amp; Practices</div><div class="skill-pills"><span class="skill-pill">Git</span><span class="skill-pill">Tortoise SVN</span><span class="skill-pill">Profiling</span><span class="skill-pill">Agile / Scrum</span><span class="skill-pill">Cross-platform</span><span class="skill-pill">Unity Profiler</span><span class="skill-pill">72/90 FPS targets</span><span class="skill-pill">PhysX</span><span class="skill-pill">Occlusion culling / LODs</span></div></div>
   </div>
 </section>
 <div class="section-divider"></div>
@@ -378,7 +378,8 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
         <li>Designed custom VR mechanics, UI systems, and interactions optimised for Meta Quest 2, 3 and HTC Vive</li>
         <li>Increased performance by 25% through efficient memory management and frame rate optimisation</li>
         <li>Implemented custom hardware integration with HTC Vive trackers and Meta Quest devices for precise physical tracking</li>
-        <li>Collaborated with cross-functional teams to deliver polished VR experiences</li>
+        <li>Collaborated with artists, designers and QA testers to deliver polished VR experiences</li>
+        <li>Researched and integrated emerging VR technologies to enhance simulation interactivity</li>
       </ul>
     </div>
     <div class="exp-item">
@@ -433,6 +434,7 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
     <div class="contact-links" id="contact-links">
       <a id="c-email" href="mailto:mayurw81@gmail.com" class="btn btn-primary">mayurw81@gmail.com</a>
       <a id="c-linkedin" href="https://linkedin.com/in/mayur-waghmare-b40620159" target="_blank" class="btn btn-outline">LinkedIn ↗</a>
+      <a id="c-github" href="https://github.com/Mayur-Waghmare-01" target="_blank" class="btn btn-outline">GitHub ↗</a>
       <a id="c-phone" href="tel:+919764859504" class="btn btn-outline">+91 97648 59504</a>
     </div>
   </div>
@@ -699,6 +701,7 @@ function getDefaultProjects() {
     {id:'7',icon:'🚜',name:'Dozer Driving Simulator',desc:'Multi-module dozer sim with realistic vehicle physics and operator training modules.',techs:['Unity','VR'],media:[],link:'',order:7},
     {id:'8',icon:'🔧',name:'Car & Bike Mechanic Simulator',desc:'Hands-on mechanic training covering engine repair, assembly, and diagnostics.',techs:['Unity','VR'],media:[],link:'',order:8},
     {id:'9',icon:'⚙️',name:'Fitter Lathe Machine VR',desc:'VR-based machine operation training with interactive lathe mechanics and safety procedures.',techs:['Unity','C#','VR'],media:[],link:'',order:9},
+    {id:'11',icon:'💣',name:'IED Training Simulator',desc:'VR defence/EOD trainer with six mission scenarios. ScriptableObject-driven missions, IED types, NPC behaviours and MCQs; ROV or wire-cutter neutralisation; instructor-monitor results with PDF export; Unity Localization.',techs:['Unity 6','C#','XR Interaction Toolkit'],media:[],link:'',order:11},
     {id:'10',icon:'💡',name:'Electrical Simulator',desc:'Interactive electrical safety and wiring simulations for vocational training.',techs:['Unity','VR SDKs'],media:[],link:'',order:10},
   ];
 }
