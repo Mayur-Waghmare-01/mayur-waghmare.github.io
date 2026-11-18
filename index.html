@@ -678,6 +678,7 @@ async function loadProjectsFromFirebase() {
     projects.forEach(x => { const k=(x.name||'').trim().toLowerCase(); const o=best.get(k); if(!o || (x.media||[]).length > (o.media||[]).length) best.set(k,x); });
     projects = [...best.values()];
     if (projects.length === 0) projects = getDefaultProjects();
+    else if (!projects.some(x => /ied/i.test(x.name||''))) projects.push(getDefaultProjects().find(x => x.id === '11'));
     renderProjects();
     renderAdminList();
   } catch(e) {
