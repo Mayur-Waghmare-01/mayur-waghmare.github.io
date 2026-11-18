@@ -674,6 +674,10 @@ async function loadProjectsFromFirebase() {
     const snap = await Promise.race([getDocs(collection(db, 'projects')), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000))]);
     projects = [];
     snap.forEach(d => projects.push({ id: d.id, ...d.data() }));
+    // drop duplicate names (keep the copy with the most media)
+    const best = new Map();
+    projects.forEach(x => { const k=(x.name||'').trim().toLowerCase(); const o=best.get(k); if(!o || (x.media||[]).length > (o.media||[]).length) best.set(k,x); });
+    projects = [...best.values()];
     if (projects.length === 0) projects = getDefaultProjects();
     renderProjects();
     renderAdminList();
