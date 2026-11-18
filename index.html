@@ -463,9 +463,8 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
   <div class="login-box">
     <div style="font-size:2rem;margin-bottom:.75rem">🔐</div>
     <h2>Admin Access</h2>
-    <p>Sign in with your Firebase admin account</p>
+    <p>Enter your admin password to manage portfolio content</p>
     <div class="login-error" id="login-error">Incorrect password. Try again.</div>
-    <input type="email" id="login-email" placeholder="admin email" style="letter-spacing:0">
     <input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Enter admin panel</button>
     <button class="login-cancel" onclick="closeLogin()">Cancel</button>
@@ -612,6 +611,7 @@ let isLoggedIn = false;
 
 // Paste your Firebase web config here so ALL visitors load your saved projects.
 // (These values are public by design; security comes from Firestore rules + Auth.)
+const ADMIN_PASSWORD = 'mayur@xr2024';
 const FIREBASE_CONFIG = { apiKey:'', authDomain:'', projectId:'', storageBucket:'', messagingSenderId:'', appId:'' };
 
 // ─── FIREBASE INIT ───
@@ -643,7 +643,6 @@ function initFirebase(cfg) {
     fbApp = initializeApp(cfg);
     db = getFirestore(fbApp);
     auth = getAuth(fbApp);
-    onAuthStateChanged(auth, u => { isLoggedIn = !!u; });
     setFbStatus(true);
     loadProjectsFromFirebase();
     loadSettingsFromFirebase();
@@ -841,8 +840,7 @@ document.addEventListener('keydown',e=>{
 
 // ─── LOGIN ───
 function openLogin() {
-  if (!auth) { openAdmin(); switchAdminTab('firebase', document.querySelectorAll('.admin-tab')[3]); toast('Connect Firebase first', true); return; }
-  if (auth.currentUser) { openAdmin(); return; }
+  if (isLoggedIn) { openAdmin(); return; }
   document.getElementById('login-screen').classList.add('open');
   document.getElementById('login-pw').value = '';
   document.getElementById('login-error').classList.remove('show');
@@ -858,11 +856,9 @@ document.getElementById('admin-toggle').addEventListener('click', function() {
 function closeLogin() { document.getElementById('login-screen').classList.remove('open'); }
 window.closeLogin = closeLogin;
 async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
   const pw = document.getElementById('login-pw').value;
-  let ok = false;
-  try { await signInWithEmailAndPassword(auth, email, pw); ok = true; } catch(e) {}
-  if (ok) {
+  if (pw === ADMIN_PASSWORD) {
+    isLoggedIn = true;
     closeLogin();
     openAdmin();
     toast('Welcome back, Mayur ✓');
