@@ -463,8 +463,9 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
   <div class="login-box">
     <div style="font-size:2rem;margin-bottom:.75rem">🔐</div>
     <h2>Admin Access</h2>
-    <p>Enter your admin password to manage portfolio content</p>
+    <p>Sign in with your Firebase admin account</p>
     <div class="login-error" id="login-error">Incorrect password. Try again.</div>
+    <input type="email" id="login-email" placeholder="admin email" style="letter-spacing:0">
     <input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Enter admin panel</button>
     <button class="login-cancel" onclick="closeLogin()">Cancel</button>
@@ -561,7 +562,7 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
         <div style="background:var(--surface2);border:1px solid rgba(79,195,161,0.2);border-radius:8px;padding:1rem;font-size:12px;color:var(--text2);line-height:1.8">
           <strong style="color:var(--teal);font-size:13px">✅ Cloudinary handles all file uploads</strong><br>
           Images, videos, and PDFs are uploaded directly to Cloudinary (free, no CORS issues).<br>
-          Firebase Firestore is used only for saving project data and settings — no Storage needed.
+          Firestore saves project data and settings. Rules: read = public, write = signed-in admin only (create the admin user under Firebase → Authentication).
         </div>
       </div>
 
@@ -574,6 +575,7 @@ footer{text-align:center;padding:2.5rem 1.5rem;border-top:1px solid var(--border
 <!-- FIREBASE SDK -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ─── CLOUDINARY CONFIG ───
@@ -599,7 +601,7 @@ async function cloudinaryUpload(file) {
 }
 
 // ─── STATE ───
-let db = null, fbApp = null;
+let db = null, fbApp = null, auth = null;
 let projects = [];
 let nextLocalId = 1000;
 let editingId = null;
@@ -608,11 +610,13 @@ let tempTechs = [];
 let lbProject = null, lbIndex = 0;
 let isLoggedIn = false;
 
-// Admin password — change this!
-const ADMIN_PASSWORD = 'mayur@xr2024';
+// Paste your Firebase web config here so ALL visitors load your saved projects.
+// (These values are public by design; security comes from Firestore rules + Auth.)
+const FIREBASE_CONFIG = { apiKey:'', authDomain:'', projectId:'', storageBucket:'', messagingSenderId:'', appId:'' };
 
 // ─── FIREBASE INIT ───
 function loadFirebaseConfig() {
+  if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId) return FIREBASE_CONFIG;
   try {
     const raw = localStorage.getItem('fb_config');
     if (raw) return JSON.parse(raw);
@@ -638,6 +642,8 @@ function initFirebase(cfg) {
   try {
     fbApp = initializeApp(cfg);
     db = getFirestore(fbApp);
+    auth = getAuth(fbApp);
+    onAuthStateChanged(auth, u => { isLoggedIn = !!u; });
     setFbStatus(true);
     loadProjectsFromFirebase();
     loadSettingsFromFirebase();
@@ -665,14 +671,14 @@ function setFbStatus(ok) {
 // ─── LOAD PROJECTS ───
 async function loadProjectsFromFirebase() {
   try {
-    const snap = await getDocs(collection(db, 'projects'));
+    const snap = await Promise.race([getDocs(collection(db, 'projects')), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000))]);
     projects = [];
     snap.forEach(d => projects.push({ id: d.id, ...d.data() }));
-    if (projects.length === 0) await seedDefaultProjects();
+    if (projects.length === 0) projects = getDefaultProjects();
     renderProjects();
     renderAdminList();
   } catch(e) {
-    toast('Could not load projects: ' + e.message, true);
+    console.warn('Could not load projects:', e.message);
     loadDefaultProjects();
   }
 }
@@ -831,7 +837,8 @@ document.addEventListener('keydown',e=>{
 
 // ─── LOGIN ───
 function openLogin() {
-  if (isLoggedIn) { openAdmin(); return; }
+  if (!auth) { openAdmin(); switchAdminTab('firebase', document.querySelectorAll('.admin-tab')[3]); toast('Connect Firebase first', true); return; }
+  if (auth.currentUser) { openAdmin(); return; }
   document.getElementById('login-screen').classList.add('open');
   document.getElementById('login-pw').value = '';
   document.getElementById('login-error').classList.remove('show');
@@ -846,10 +853,12 @@ document.getElementById('admin-toggle').addEventListener('click', function() {
 
 function closeLogin() { document.getElementById('login-screen').classList.remove('open'); }
 window.closeLogin = closeLogin;
-function doLogin() {
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
   const pw = document.getElementById('login-pw').value;
-  if (pw === ADMIN_PASSWORD) {
-    isLoggedIn = true;
+  let ok = false;
+  try { await signInWithEmailAndPassword(auth, email, pw); ok = true; } catch(e) {}
+  if (ok) {
     closeLogin();
     openAdmin();
     toast('Welcome back, Mayur ✓');
@@ -1019,7 +1028,7 @@ async function saveProject(isNew) {
         const ref2 = await addDoc(collection(db,'projects'),data);
         projects.push({id:ref2.id,...data});
       } else {
-        await updateDoc(doc(db,'projects',String(editingId)),data);
+        await setDoc(doc(db,'projects',String(editingId)),data,{merge:true});
         const idx=projects.findIndex(x=>String(x.id)===String(editingId));
         if(idx>-1) projects[idx]={id:editingId,...data};
       }
@@ -1132,8 +1141,9 @@ window.renderResumePublic = renderResumePublic;
 
 // ─── BOOT ───
 const savedCfg = loadFirebaseConfig();
+loadDefaultProjects();
 if (savedCfg) { initFirebase(savedCfg); }
-else { loadDefaultProjects(); setFbStatus(false); renderResumePublic(null); }
+else { setFbStatus(false); renderResumePublic(null); }
 
 </script>
 </body>
