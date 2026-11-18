@@ -678,7 +678,12 @@ async function loadProjectsFromFirebase() {
     projects.forEach(x => { const k=(x.name||'').trim().toLowerCase(); const o=best.get(k); if(!o || (x.media||[]).length > (o.media||[]).length) best.set(k,x); });
     projects = [...best.values()];
     if (projects.length === 0) projects = getDefaultProjects();
-    else if (!projects.some(x => /ied/i.test(x.name||''))) projects.push(getDefaultProjects().find(x => x.id === '11'));
+    else {
+      const has = re => projects.some(x => re.test(x.name||''));
+      const defs = getDefaultProjects();
+      if (!has(/ied/i)) projects.push(defs.find(x => x.id === '11'));
+      if (!has(/training template/i)) projects.push(defs.find(x => x.id === '12'));
+    }
     renderProjects();
     renderAdminList();
   } catch(e) {
@@ -712,6 +717,7 @@ function getDefaultProjects() {
     {id:'8',icon:'🔧',name:'Car & Bike Mechanic Simulator',desc:'Hands-on mechanic training covering engine repair, assembly, and diagnostics.',techs:['Unity','VR'],media:[],link:'',order:8},
     {id:'9',icon:'⚙️',name:'Fitter Lathe Machine VR',desc:'VR-based machine operation training with interactive lathe mechanics and safety procedures.',techs:['Unity','C#','VR'],media:[],link:'',order:9},
     {id:'11',icon:'💣',name:'IED Training Simulator',desc:'VR defence/EOD trainer with six mission scenarios. ScriptableObject-driven missions, IED types, NPC behaviours and MCQs; ROV or wire-cutter neutralisation; instructor-monitor results with PDF export; Unity Localization.',techs:['Unity 6','C#','XR Interaction Toolkit'],media:[],link:'',order:11},
+    {id:'12',icon:'🧩',name:'VR Training Template',desc:'Reusable Unity 6 template generalised from the IED simulator: Bootstrap → Login → Main Menu → Module Selection → Scenario → Assessment → Results. Role-based accounts (Admin, Trainer, Student, Guest) on a Firebase REST backend with offline login, ScriptableObject and Theme-driven, with on-demand session report upload.',techs:['Unity 6','C#','XR Interaction Toolkit','Firebase'],media:[],link:'',order:12},
     {id:'10',icon:'💡',name:'Electrical Simulator',desc:'Interactive electrical safety and wiring simulations for vocational training.',techs:['Unity','VR SDKs'],media:[],link:'',order:10},
   ];
 }
